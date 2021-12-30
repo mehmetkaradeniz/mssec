@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -12,12 +11,13 @@ namespace IdentityServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllersWithViews();
             services.AddIdentityServer()
                 .AddInMemoryClients(Config.Clients)
                 .AddInMemoryApiScopes(Config.ApiScopes)
-                //.AddInMemoryIdentityResources(Config.IdentityResources)
+                .AddInMemoryIdentityResources(Config.IdentityResources)
+                .AddTestUsers(Config.TestUsers)
                 //.AddInMemoryApiResources(Config.ApiResources)
-                //.AddTestUsers(Config.TestUsers)
                 .AddDeveloperSigningCredential();
         }
 
@@ -29,15 +29,14 @@ namespace IdentityServer
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseIdentityServer();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }
