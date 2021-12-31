@@ -26,8 +26,16 @@ namespace Movies.Client.Controllers
         // GET: Movies
         public async Task<IActionResult> Index()
         {
-            LogTokenAndClaims();
+            await LogTokenAndClaims();
             return View(await _movieService.GetAll());
+        }
+
+
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> OnlyAdmin()
+        {
+            var model = await _movieService.GetUserInfo();
+            return View(model);
         }
 
         public async Task Logout()

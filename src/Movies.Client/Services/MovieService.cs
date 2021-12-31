@@ -1,4 +1,8 @@
-﻿using Movies.Client.Models;
+﻿using IdentityModel.Client;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Movies.Client.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,10 +15,12 @@ namespace Movies.Client.Services
     public class MovieService : IMovieService
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public MovieService(IHttpClientFactory httpClientFactory)
+        public MovieService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task<IEnumerable<Movie>> GetAll()
@@ -84,5 +90,29 @@ namespace Movies.Client.Services
             var deletedMovie = JsonConvert.DeserializeObject<Movie>(responseContent);
         }
 
+        public async Task<OnlyAdminViewModel> GetUserInfo()
+        {
+            var idpClient = _httpClientFactory.CreateClient("IDPClient");
+            var metadataResponse = await idpClient.GetDiscoveryDocumentAsync();
+            if (metadataResponse.IsError)
+                throw new HttpRequestException("Something went wrong during requesting the discovery document");
+
+            var accessToken = await _httpContextAccessor.HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+            var userInfoResponse = await idpClient.GetUserInfoAsync(new UserInfoRequest()
+            {
+                Address = metadataResponse.UserInfoEndpoint,
+                Token = accessToken
+            });
+            if (userInfoResponse.IsError)
+                throw new HttpRequestException("Something went wrong during requesting the user info");
+
+            var userInfoDict = new Dictionary<string, string>();
+
+            foreach (var claim in userInfoResponse.Claims)
+                userInfoDict.Add(claim.Type, claim.Value);
+
+            return new OnlyAdminViewModel(userInfoDict);
+        }
     }
 }

@@ -12,5 +12,6 @@ namespace Movies.Client.Services
         Task<Movie> Add(Movie movie);
         Task<Movie> Update(Movie movie);
         Task Delete(int id);
+        Task<OnlyAdminViewModel> GetUserInfo();
     }
 }

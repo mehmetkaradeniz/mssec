@@ -1,0 +1,30 @@
+﻿@model OnlyAdminViewModel
+
+@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<h1>Welcome to admin panel</h1>
+<h3>User Info</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var keyValue in Model.UserInfoDictionary)
+        {
+            <tr>
+                <td>
+                    @keyValue.Key
+                </td>
+                <td>
+                    @keyValue.Value
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
