@@ -40,10 +40,11 @@ namespace Movies.Client
 
                 options.ClientId = "movieMvcClient";
                 options.ClientSecret = "secret";
-                options.ResponseType = "code";
+                options.ResponseType = "code id_token";
 
                 options.Scope.Add("openid");
                 options.Scope.Add("profile");
+                options.Scope.Add("movieAPI");
 
                 options.SaveTokens = true;
 
@@ -68,13 +69,7 @@ namespace Movies.Client
                 client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
             });
 
-            services.AddSingleton(new ClientCredentialsTokenRequest()
-            {
-                Address = "https://localhost:5005/connect/token",
-                ClientId = "movieClient",
-                ClientSecret = "secret",
-                Scope = "movieAPI"
-            });
+            services.AddHttpContextAccessor();
 
         }
 
